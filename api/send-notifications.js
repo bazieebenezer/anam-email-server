@@ -48,12 +48,9 @@ module.exports = async (req, res) => {
 
   // Check if Firebase failed to initialize
   if (!firebaseInitialized) {
-    return res
-      .status(500)
-      .json({
-        error:
-          "Server configuration error: Firebase Admin SDK not initialized.",
-      });
+    return res.status(500).json({
+      error: "Server configuration error: Firebase Admin SDK not initialized.",
+    });
   }
 
   if (req.method !== "POST") {
@@ -79,7 +76,26 @@ module.exports = async (req, res) => {
     const subject = `Nouveau ${type} publié par METEO Burkina`;
     const descriptionSnippet =
       description.split("\n").slice(0, 3).join("\n") + "...";
-    const htmlBody = `<p>Un nouveau <strong>${type}</strong> a été publié.</p><p><strong>Description :</strong></p><pre>${descriptionSnippet}</pre><p>Pour plus d'informations, veuillez visiter le site officiel :</p><a href="https://meteoburkina.bf/">METEO Burkina</a>`;
+    const htmlBody = `<div style="font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #004d99; font-size: 24px; margin: 0;">Alerte Météo Burkina</h1>
+    </div>
+    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 6px; border-left: 5px solid #004d99;">
+        <p style="margin: 0; font-size: 18px;">Un nouveau <strong style="color: #004d99;">${type}</strong> a été publié.</p>
+    </div>
+    <div style="margin-top: 20px;">
+        <h2 style="color: #555; font-size: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Description :</h2>
+        <pre style="background-color: #eee; padding: 15px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace, sans-serif;">${descriptionSnippet}</pre>
+    </div>
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="https://meteoburkina.bf/" style="background-color: #004d99; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
+            Visitez le site officiel
+        </a>
+    </div>
+    <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #888;">
+        <p>Ce service est fourni par METEO Burkina.</p>
+    </div>
+</div>`;
 
     await resend.emails.send({
       from: "METEO Burkina <onboarding@resend.dev>",
