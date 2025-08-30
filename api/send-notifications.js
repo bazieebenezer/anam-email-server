@@ -12,7 +12,6 @@ try {
         credential: admin.credential.cert(serviceAccount),
       });
       firebaseInitialized = true;
-      console.log("Firebase Admin SDK initialized successfully.");
     }
   } else {
     console.error(
@@ -34,10 +33,6 @@ try {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 module.exports = async (req, res) => {
-  console.log(
-    `[${new Date().toISOString()}] Function invoked with method: ${req.method}`
-  );
-
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -76,19 +71,19 @@ module.exports = async (req, res) => {
     const subject = `Nouveau ${type} publié par METEO Burkina`;
     const descriptionSnippet =
       description.split("\n").slice(0, 3).join("\n") + "...";
-    const htmlBody = `<div style="font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+    const htmlBody = `<div style="font-family: Inter, sans-serif; font-size: 16px; color: #333; line-height: 1.6; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
     <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="color: #004d99; font-size: 24px; margin: 0;">Alerte Météo Burkina</h1>
+        <h1 style="color: #0077cc; font-size: 24px; margin: 0; font-weight: 700;">Alerte METEO Burkina</h1>
     </div>
-    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 6px; border-left: 5px solid #004d99;">
-        <p style="margin: 0; font-size: 18px;">Un nouveau <strong style="color: #004d99;">${type}</strong> a été publié.</p>
+    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 6px; border-left: 5px solid #ffcc00;">
+        <p style="margin: 0; font-size: 18px; color: #666666;">Un nouveau <strong style="color: #0077cc;">${type}</strong> a été publié.</p>
     </div>
     <div style="margin-top: 20px;">
         <h2 style="color: #555; font-size: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Description :</h2>
-        <pre style="background-color: #eee; padding: 15px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace, sans-serif;">${descriptionSnippet}</pre>
+        <pre style="background-color: #eee; padding: 15px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; font-family: Inter, sans-serif;">${descriptionSnippet}</pre>
     </div>
     <div style="text-align: center; margin-top: 30px;">
-        <a href="https://meteoburkina.bf/" style="background-color: #004d99; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
+        <a href="https://meteoburkina.bf/" style="background-color: #0077cc; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
             Visitez le site officiel
         </a>
     </div>
