@@ -53,16 +53,27 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { type, description } = req.body;
+    const { type, description, recipientId } = req.body;
 
     if (!type || !description) {
       return res.status(400).json({ error: "Missing type or description" });
     }
 
-    const listUsersResult = await admin.auth().listUsers();
-    const emails = listUsersResult.users
-      .map((userRecord) => userRecord.email)
-      .filter((email) => !!email);
+    let emails = [];
+
+    if (recipientId && recipientId !== "all") {
+      // A specific user is targeted
+      const userRecord = await admin.auth().getUser(recipientId);
+      if (userRecord.email) {
+        emails.push(userRecord.email);
+      }
+    } else {
+      // Send to everyone (existing logic)
+      const listUsersResult = await admin.auth().listUsers();
+      emails = listUsersResult.users
+        .map((userRecord) => userRecord.email)
+        .filter((email) => !!email);
+    }
 
     if (emails.length === 0) {
       return res.status(200).json({ message: "No users to notify." });
@@ -94,7 +105,7 @@ module.exports = async (req, res) => {
 
     await resend.emails.send({
       from: "METEO Burkina <onboarding@resend.dev>",
-      to: emails, // Changed from test address to actual user emails
+      to: emails,
       subject: subject,
       html: htmlBody,
     });
