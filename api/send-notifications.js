@@ -60,6 +60,12 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: "Missing type or description" });
     }
 
+    // --- HARDCODED DEBUGGING ---
+    console.log("DEBUG: Using hardcoded email list.");
+    const emails = ["jbuilder460@gmail.com", "baziejosias2022@gmail.com"];
+    // --- END OF HARDCODED DEBUGGING ---
+
+    /*
     let emails = [];
 
     if (recipientId && recipientId !== "all") {
@@ -73,10 +79,7 @@ module.exports = async (req, res) => {
           console.warn(`User with UID ${recipientId} does not have an email.`);
         }
       } catch (userError) {
-        console.error(
-          `Failed to fetch user with UID: ${recipientId}`,
-          userError
-        );
+        console.error(`Failed to fetch user with UID: ${recipientId}`, userError);
       }
     } else {
       console.log("Recipient is 'all' or undefined. Fetching all users.");
@@ -85,6 +88,7 @@ module.exports = async (req, res) => {
         .map((userRecord) => userRecord.email)
         .filter((email) => !!email);
     }
+    */
 
     console.log("Final list of emails to be sent:", emails);
 
