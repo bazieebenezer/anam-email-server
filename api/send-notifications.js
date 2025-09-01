@@ -12,6 +12,7 @@ try {
         credential: admin.credential.cert(serviceAccount),
       });
       firebaseInitialized = true;
+      console.log("Firebase Admin SDK initialized successfully.");
     }
   } else {
     console.error(
@@ -23,7 +24,6 @@ try {
     "CRITICAL: Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY. The JSON is corrupt.",
     e.message
   );
-  // Log the first 20 characters to help debug the malformed JSON without leaking sensitive info
   const keyStart = process.env.FIREBASE_SERVICE_ACCOUNT_KEY.substring(0, 20);
   console.error(`The key starts with: "${keyStart}..."
 `);
@@ -41,8 +41,8 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
-  // Check if Firebase failed to initialize
   if (!firebaseInitialized) {
+    console.error("Handler invoked but Firebase not initialized.");
     return res.status(500).json({
       error: "Server configuration error: Firebase Admin SDK not initialized.",
     });
@@ -54,6 +54,7 @@ module.exports = async (req, res) => {
 
   try {
     const { type, description, recipientId } = req.body;
+    console.log("Received request with body:", req.body);
 
     if (!type || !description) {
       return res.status(400).json({ error: "Missing type or description" });
@@ -62,20 +63,33 @@ module.exports = async (req, res) => {
     let emails = [];
 
     if (recipientId && recipientId !== "all") {
-      // A specific user is targeted
-      const userRecord = await admin.auth().getUser(recipientId);
-      if (userRecord.email) {
-        emails.push(userRecord.email);
+      console.log(`Specific recipient detected. UID: ${recipientId}`);
+      try {
+        const userRecord = await admin.auth().getUser(recipientId);
+        console.log("Successfully fetched userRecord:", userRecord.toJSON());
+        if (userRecord.email) {
+          emails.push(userRecord.email);
+        } else {
+          console.warn(`User with UID ${recipientId} does not have an email.`);
+        }
+      } catch (userError) {
+        console.error(
+          `Failed to fetch user with UID: ${recipientId}`,
+          userError
+        );
       }
     } else {
-      // Send to everyone (existing logic)
+      console.log("Recipient is 'all' or undefined. Fetching all users.");
       const listUsersResult = await admin.auth().listUsers();
       emails = listUsersResult.users
         .map((userRecord) => userRecord.email)
         .filter((email) => !!email);
     }
 
+    console.log("Final list of emails to be sent:", emails);
+
     if (emails.length === 0) {
+      console.log("No users to notify. Exiting.");
       return res.status(200).json({ message: "No users to notify." });
     }
 
@@ -103,12 +117,20 @@ module.exports = async (req, res) => {
     </div>
 </div>`;
 
-    await resend.emails.send({
-      from: "METEO Burkina <onboarding@resend.dev>",
-      to: emails,
-      subject: subject,
-      html: htmlBody,
-    });
+    console.log(`Sending emails to ${emails.length} recipients in a loop...`);
+
+    const sendPromises = emails.map((email) =>
+      resend.emails.send({
+        from: "METEO Burkina <onboarding@resend.dev>",
+        to: [email], // Send to a single email address
+        subject: subject,
+        html: htmlBody,
+      })
+    );
+
+    await Promise.all(sendPromises);
+
+    console.log("All emails processed successfully.");
 
     res.status(200).json({ message: "Notifications sent successfully!" });
   } catch (error) {
